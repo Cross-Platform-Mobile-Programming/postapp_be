@@ -2,10 +2,6 @@
 
 BackEnd PostApp is a backend application built with Laravel, designed for practicing backend REST API development in the Cross-Platform Mobile Programming course at Dipa Makassar University.
 
-## Description
-
-This project serves as the backend for the PostApp application. It utilizes the Laravel framework to provide RESTful APIs, authentication, and database management. The codebase is organized for maintainability and scalability, making it suitable for both learning and production environments.
-
 ## Getting Started
 
 Follow these steps to clone and set up the project locally:
