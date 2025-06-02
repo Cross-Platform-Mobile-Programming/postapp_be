@@ -57,6 +57,6 @@ Follow these steps to clone and set up the project locally:
     php artisan serve
     ```
 
----
+## License
 
-_Replace `magusidris` and `postapp_be` with your actual GitHub username and repository name._
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
