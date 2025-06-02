@@ -40,10 +40,6 @@ Follow these steps to clone and set up the project locally:
     php artisan key:generate
     ```
 
-    ```
-
-    ```
-
 6. **Generate the storage links:**
 
     ```bash
