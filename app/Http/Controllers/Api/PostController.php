@@ -12,6 +12,7 @@ use App\Http\Resources\Api\PostResource;
 
 class PostController extends Controller
 {
+    // get plural posts data (data post jamak)
     public function index()
     {
         $posts = Post::paginate(10);
@@ -24,16 +25,28 @@ class PostController extends Controller
         ]);
     }
 
+    // get singular post data by slug param (data post tunggal)
     public function show(string $slug)
     {
-        $post = Post::where('slug', $slug)->first;
+        // Fetch the post by slug
+        $post = Post::where('slug', $slug)->first();
 
-        return response()->json([
-            'status' => 200,
-            'success' => true,
-            'message' => 'Data Post',
-            'data' => $post
-        ]);
+        if (!$post) {
+            return (new PostResource(
+                404,
+                false,
+                'Post not found',
+                null
+            ))->response()->setStatusCode(404);
+        }
+
+        // Return the post as a JSON response
+        return new PostResource(
+            200,
+            true,
+            'Post fetched successfully',
+            $post
+        );
     }
 
     public function store(Request $request)
@@ -42,7 +55,7 @@ class PostController extends Controller
         $validator = Validator::make($request->all(), [
             'image' => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:2048',
             'title' => 'required|string|unique:posts,title',
-            'content' => 'required|string'
+            'content' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -74,7 +87,34 @@ class PostController extends Controller
         );
     }
 
-    public function update(Request $request, string $slug) {}
+    public function destroy(string $slug)
+    {
+        // Fetch the post by slug
+        $post = Post::where('slug', $slug)->first();
 
-    public function destroy(string $slug) {}
+        if (!$post) {
+            return (new PostResource(
+                404,
+                false,
+                'Data post tidak ditemukan',
+                null
+            ))->response()->setStatusCode(404);
+        }
+
+        if ($post->image) {
+            // Delete the old image if a new one is uploaded
+            Storage::delete($post->getRawOriginal('image'));
+        }
+
+        // Delete the post
+        $post->delete();
+
+        // Return a success response
+        return new PostResource(
+            200,
+            true,
+            'Post deleted successfully',
+            null
+        );
+    }
 }
