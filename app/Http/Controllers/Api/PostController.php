@@ -15,7 +15,7 @@ class PostController extends Controller
     // get plural posts data (data post jamak)
     public function index()
     {
-        $posts = Post::paginate(10);
+        $posts = Post::limit(5)->get();
 
         return response()->json([
             'status' => 200,
@@ -83,6 +83,74 @@ class PostController extends Controller
             201,
             true,
             'Post created successfully',
+            $post
+        );
+    }
+
+    public function update(Request $request, string $slug)
+    {
+        // Validate the incoming request data
+        $validator = Validator::make($request->all(), [
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'title' => 'required|string|unique:posts,title,' . $slug . ',slug',
+            'content' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return (new PostResource(
+                422,
+                false,
+                'Validation failed',
+                $validator->errors()
+            ))->response()->setStatusCode(422);
+        }
+
+        // Fetch the post by ID
+        $post = Post::where('slug', $slug)->first();
+
+        if (!$post) {
+            return (new PostResource(
+                404,
+                false,
+                'Post not found',
+                null
+            ))->response()->setStatusCode(404);
+        }
+
+        if ($request->file('image')) {
+            // If a new image is uploaded, delete the old one
+            if ($post->image) {
+                Storage::delete($post->getRawOriginal('image'));
+            }
+
+            // store the image in the public storage
+            $image = $request->file('image');
+
+            $imagePath = 'posts/' . $image->hashName();
+
+            $image->storeAs($imagePath);
+
+            // Update the post
+            $post->update([
+                'image' => $imagePath,
+                'title' => $request->title,
+                'slug'  => Str::slug($request->title, '-'),
+                'content' => $request->content,
+            ]);
+        }
+
+        // Update the post
+        $post->update([
+            'title' => $request->title,
+            'slug'  => Str::slug($request->title, '-'),
+            'content' => $request->content,
+        ]);
+
+        // Return a success response
+        return new PostResource(
+            200,
+            true,
+            'Post updated successfully',
             $post
         );
     }
